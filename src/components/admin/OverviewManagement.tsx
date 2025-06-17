@@ -3,7 +3,7 @@ import { useOrchid } from '../../context/OrchidContext';
 import { useAdminStats } from '../../hooks/useAdminStats';
 
 export function OverviewManagement() {
-  const { orchids, categories } = useOrchid();
+  const { orchids } = useOrchid();
   const { users, stats } = useAdminStats();
 
   return (

@@ -8,7 +8,7 @@ export function OrchidManagement() {
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const { orchids, categories, loading, error, refreshOrchids } = useOrchid();
+  const { orchids, loading, error, refreshOrchids } = useOrchid();
 
   const filteredOrchids = orchids.filter(orchid =>
     orchid.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,11 +30,6 @@ export function OrchidManagement() {
       }
     }
   };
-
-  // const getCategoryName = (categoryName: string) => {
-  //   const category = categories.find(cat => cat.name === categoryName);
-  //   return category?.name || 'Uncategorized';
-  // };
 
   return (
     <div className="space-y-6">

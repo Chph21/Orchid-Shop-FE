@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Filter, Search } from 'lucide-react';
+import { OrchidDetail } from './OrchidDetail';
 import type { OrchidDTO, CategoryDTO } from '../types/types';
 import { OrchidCard } from './OrchidCard';
 
@@ -7,13 +8,16 @@ interface OrchidGridProps {
   orchids: OrchidDTO[];
   categories?: CategoryDTO[];
   onViewDetails: (orchid: OrchidDTO) => void;
+  loading?: boolean;
+  error?: string;
 }
 
-export function OrchidGrid({ orchids, categories = [], onViewDetails }: OrchidGridProps) {
+export function OrchidGrid({ orchids, categories = [], onViewDetails, loading, error }: OrchidGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedOrchid, setSelectedOrchid] = useState<OrchidDTO | null>(null);
 
   const categoryOptions = [
     { value: 'all', label: 'All Categories' },
@@ -57,6 +61,9 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails }: OrchidGr
           return a.name.localeCompare(b.name);
       }
     });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -132,11 +139,16 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails }: OrchidGr
       {/* Orchid Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredOrchids.map(orchid => (
-          <OrchidCard
+          <div
             key={orchid.id}
-            orchid={orchid}
-            onViewDetails={onViewDetails}
-          />
+            onClick={() => setSelectedOrchid(orchid)}
+            className="cursor-pointer"
+          >
+            <OrchidCard
+              orchid={orchid}
+              onViewDetails={onViewDetails}
+            />
+          </div>
         ))}
       </div>
 
@@ -151,6 +163,14 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails }: OrchidGr
             Try adjusting your search terms or filters to find what you're looking for.
           </p>
         </div>
+      )}
+
+      {/* Orchid Detail Modal */}
+      {selectedOrchid && (
+        <OrchidDetail
+          orchid={selectedOrchid}
+          onClose={() => setSelectedOrchid(null)}
+        />
       )}
     </div>
   );

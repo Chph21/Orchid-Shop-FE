@@ -1,3 +1,4 @@
+import { BrowserRouter } from 'react-router-dom';
 import { useState } from 'react';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -8,10 +9,11 @@ import { Cart } from './components/Cart';
 import { Footer } from './components/Footer';
 import { Login } from './components/Login';
 import { AppRoutes } from './routes/AppRoutes';
+import { Register } from './components/Register';
+import { Toaster } from 'react-hot-toast';
+import { CheckoutFlow } from './components/checkout/CheckoutFlow';
 import { useOrchid } from './context/OrchidContext';
 import type { OrchidDTO } from './types/types';
-import { CheckoutFlow } from './components/checkout/CheckoutFlow';
-import { Register } from './components/Register';
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -27,9 +29,9 @@ function AppContent() {
     setSelectedOrchid(orchid);
   };
 
-  const handleCloseDetail = () => {
-    setSelectedOrchid(null);
-  };
+  // const handleCloseDetail = () => {
+  //   setSelectedOrchid(null);
+  // };
 
   const handleShopClick = () => {
     setCurrentPage('shop');
@@ -60,6 +62,7 @@ function AppContent() {
       />
       
       <main>
+        <Toaster position="top-center" />
         <AppRoutes
           currentPage={currentPage}
           orchids={orchids}
@@ -73,13 +76,13 @@ function AppContent() {
 
       {currentPage !== 'admin' && <Footer />}
 
-      {/* Orchid Detail Modal */}
+      {/* Orchid Detail Modal
       {selectedOrchid && (
         <OrchidDetail
           orchid={selectedOrchid}
           onClose={handleCloseDetail}
         />
-      )}
+      )} */}
 
       {/* Shopping Cart */}
       <Cart
@@ -115,13 +118,15 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <OrchidProvider>
-        <CartProvider>
-          <AppContent />
-        </CartProvider>
-      </OrchidProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <OrchidProvider>
+          <CartProvider>
+            <AppContent />
+          </CartProvider>
+        </OrchidProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

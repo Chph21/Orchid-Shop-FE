@@ -85,31 +85,6 @@ export interface AppRoutesProps {
     onShopClick: () => void;
 }
 
-// Additional types for API compatibility
-// export interface OrchidCreateRequest {
-//     isNatural: string;
-//     description: string;
-//     name: string;
-//     url: string;
-//     price: number;
-//     categoryId: string;
-// }
-
-// export interface OrchidUpdateRequest {
-//     isNatural?: string;
-//     description?: string;
-//     name?: string;
-//     url?: string;
-//     price?: number;
-//     categoryId?: string;
-// }
-
-// Helper type for converting between legacy and new format
-export interface OrchidDisplayData extends OrchidDTO {
-    isAttractive?: boolean;
-    category?: string; 
-}
-
 export interface OrchidReadResponse {
     id: string;
     name: string;
@@ -140,4 +115,52 @@ export interface OrchidSearchParams {
     page?: number;
     size?: number;
     sort?: string[];
+}
+
+export interface OrderReadResponse {
+    id: string;
+    accountId: string;
+    orderDate: string;
+    status: string;
+    totalAmount: number;
+}
+
+export interface OrderWriteRequest {
+    accountId: string;
+    orderDate: string;
+    status: string;
+    totalAmount: number;
+}
+
+export interface OrderSearchParams {
+    id?: string;
+    date?: string;
+    totalAmount?: number;
+    status?: string;
+    page?: number;
+    size?: number;
+    sort?: string[];
+}
+
+export interface OrderDetailWriteRequest {
+    orchidId: string;
+    quantity: number;
+    price: number;
+}
+
+export interface OrderWriteRequest {
+    accountId: string;
+    orderDate: string;
+    status: string;
+    totalAmount: number;
+    orderDetails: OrderDetailWriteRequest[];
+}
+
+export interface OrderDetailReadResponse {
+    id: string;
+    orderId: string;
+    orchidId: string;
+    orchidName: string;
+    price: number;
+    quantity: number;
 }

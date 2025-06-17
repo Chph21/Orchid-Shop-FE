@@ -29,7 +29,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               alt={item.orchid.name}
               className="w-12 h-12 object-cover rounded-lg"
               onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/48x48?text=Orchid';
+                e.currentTarget.src = '';
               }}
             />
             <div className="flex-1 min-w-0">
@@ -48,7 +48,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         ))}
       </div>
 
-      {/* Totals */}
+      {/* Totals
       <div className="border-t border-gray-200 pt-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
@@ -67,7 +67,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           <span className="text-gray-900">${tax.toFixed(2)}</span>
         </div>
         
-        <div className="border-t border-gray-200 pt-2">
+        {/* <div className="border-t border-gray-200 pt-2">
           <div className="flex justify-between">
             <span className="text-base font-semibold text-gray-900">Total</span>
             <span className="text-base font-semibold text-emerald-600">
@@ -75,14 +75,14 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
             </span>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      {/* Security Notice */}
+      {/* Security Notice
       <div className="mt-6 text-xs text-gray-500 text-center">
         <p>🔒 Your payment information is secure and encrypted</p>
         <p className="mt-1">30-day healthy arrival guarantee for all orchids</p>
         <p className="mt-1">Free shipping on orders over $100</p>
-      </div>
+      </div> */}
     </div>
   );
 };
