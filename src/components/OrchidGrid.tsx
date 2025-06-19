@@ -1,23 +1,21 @@
 import { useState } from 'react';
 import { Filter, Search } from 'lucide-react';
-import { OrchidDetail } from './OrchidDetail';
 import type { OrchidDTO, CategoryDTO } from '../types/types';
 import { OrchidCard } from './OrchidCard';
 
 interface OrchidGridProps {
   orchids: OrchidDTO[];
   categories?: CategoryDTO[];
-  onViewDetails: (orchid: OrchidDTO) => void;
+  onViewDetails?: (orchid: OrchidDTO) => void;
   loading?: boolean;
   error?: string;
 }
 
-export function OrchidGrid({ orchids, categories = [], onViewDetails, loading, error }: OrchidGridProps) {
+export function OrchidGrid({ orchids, categories = [], loading, error }: OrchidGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedOrchid, setSelectedOrchid] = useState<OrchidDTO | null>(null);
 
   const categoryOptions = [
     { value: 'all', label: 'All Categories' },
@@ -62,8 +60,17 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails, loading, e
       }
     });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-lg text-gray-600">Loading orchids...</div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="flex justify-center items-center min-h-[400px]">
+      <div className="text-lg text-red-600">{error}</div>
+    </div>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -139,16 +146,10 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails, loading, e
       {/* Orchid Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredOrchids.map(orchid => (
-          <div
+          <OrchidCard
             key={orchid.id}
-            onClick={() => setSelectedOrchid(orchid)}
-            className="cursor-pointer"
-          >
-            <OrchidCard
-              orchid={orchid}
-              onViewDetails={onViewDetails}
-            />
-          </div>
+            orchid={orchid}
+          />
         ))}
       </div>
 
@@ -163,14 +164,6 @@ export function OrchidGrid({ orchids, categories = [], onViewDetails, loading, e
             Try adjusting your search terms or filters to find what you're looking for.
           </p>
         </div>
-      )}
-
-      {/* Orchid Detail Modal */}
-      {selectedOrchid && (
-        <OrchidDetail
-          orchid={selectedOrchid}
-          onClose={() => setSelectedOrchid(null)}
-        />
       )}
     </div>
   );
