@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { Eye, Edit, Trash2, Plus, Search } from 'lucide-react';
 import { useOrchid } from '../../context/OrchidContext';
 import { orchidApi } from '../../api/orchidApi';
+import { OrchidEditModal } from './modals/OrchidEditModal';
+import { toast } from 'react-hot-toast';
 
 export function OrchidManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [editingOrchid, setEditingOrchid] = useState<any>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { orchids, loading, error, refreshOrchids } = useOrchid();
 
@@ -22,13 +26,29 @@ export function OrchidManagement() {
         setLocalLoading(true);
         await orchidApi.delete(orchidId);
         await refreshOrchids();
+        toast.success('Orchid deleted successfully');
       } catch (err) {
         console.error('Error deleting orchid:', err);
         setLocalError('Failed to delete orchid');
+        toast.error('Failed to delete orchid');
       } finally {
         setLocalLoading(false);
       }
     }
+  };
+
+  const handleEditOrchid = (orchid: any) => {
+    setEditingOrchid(orchid);
+  };
+
+  const handleCreateOrchid = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setEditingOrchid(null);
+    setIsCreateModalOpen(false);
+    refreshOrchids();
   };
 
   return (
@@ -36,7 +56,10 @@ export function OrchidManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Orchid Management</h2>
-        <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center space-x-2">
+        <button 
+          onClick={handleCreateOrchid}
+          className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center space-x-2"
+        >
           <Plus className="h-4 w-4" />
           <span>Add Orchid</span>
         </button>
@@ -131,10 +154,10 @@ export function OrchidManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button className="text-emerald-600 hover:text-emerald-900 transition-colors">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button className="text-blue-600 hover:text-blue-900 transition-colors">
+                        <button 
+                          onClick={() => handleEditOrchid(orchid)}
+                          className="text-blue-600 hover:text-blue-900 transition-colors"
+                        >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
@@ -151,6 +174,15 @@ export function OrchidManagement() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Edit/Create Modal */}
+      {(editingOrchid || isCreateModalOpen) && (
+        <OrchidEditModal
+          orchid={editingOrchid}
+          isOpen={true}
+          onClose={handleModalClose}
+        />
       )}
     </div>
   );
