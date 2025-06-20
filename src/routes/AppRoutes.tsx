@@ -32,7 +32,7 @@ export function AppRoutes({
   const renderShopPage = () => {
     if (loading) return renderLoadingState();
     if (error) return renderErrorState(error);
-    return <OrchidGrid orchids={orchids} categories={categories} onViewDetails={onViewDetails} />;
+    return <OrchidGrid orchids={orchids} categories={categories} onViewDetails={onViewDetails} error={error} />;
   };
 
   const renderAdminPage = () => {

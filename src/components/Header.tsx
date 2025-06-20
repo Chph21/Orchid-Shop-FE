@@ -1,37 +1,38 @@
 import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Menu, X, Flower, User, LogOut, Settings } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   onCartOpen: () => void;
-  currentPage: string;
-  onPageChange: (page: string) => void;
   onLoginOpen: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onCartOpen, currentPage, onPageChange, onLoginOpen }) => {
+export const Header: React.FC<HeaderProps> = ({ onCartOpen, onLoginOpen }) => {
   const { itemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const location = useLocation();
 
   const navigation = [
-    { name: 'Home', id: 'home' },
-    { name: 'Shop', id: 'shop' },
-    { name: 'About', id: 'about' },
-    { name: 'Contact', id: 'contact' }
+    { name: 'Home', path: '/' },
+    { name: 'Shop', path: '/shop' },
+    { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' }
   ];
 
   const handleLogout = () => {
     logout();
     setIsUserMenuOpen(false);
-    onPageChange('home');
   };
 
-  const handleAdminAccess = () => {
-    onPageChange('admin');
-    setIsUserMenuOpen(false);
+  const isActivePath = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
   };
 
   return (
@@ -39,30 +40,27 @@ export const Header: React.FC<HeaderProps> = ({ onCartOpen, currentPage, onPageC
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div 
-            className="flex items-center space-x-2 cursor-pointer group"
-            onClick={() => onPageChange('home')}
-          >
+          <Link to="/" className="flex items-center space-x-2 group">
             <Flower className="h-8 w-8 text-emerald-600 group-hover:text-emerald-700 transition-colors" />
             <span className="text-2xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
               Orchid Haven
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onPageChange(item.id)}
+              <Link
+                key={item.path}
+                to={item.path}
                 className={`text-sm font-medium transition-colors hover:text-emerald-600 ${
-                  currentPage === item.id
+                  isActivePath(item.path)
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
                     : 'text-gray-700'
                 }`}
               >
                 {item.name}
-              </button>
+              </Link>
             ))}
           </nav>
 
@@ -112,13 +110,14 @@ export const Header: React.FC<HeaderProps> = ({ onCartOpen, currentPage, onPageC
                     </div>
                     
                     {user?.role === 'admin' && (
-                      <button
-                        onClick={handleAdminAccess}
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsUserMenuOpen(false)}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center space-x-2"
                       >
                         <Settings className="h-4 w-4" />
                         <span>Admin Dashboard</span>
-                      </button>
+                      </Link>
                     )}
                     
                     <button
@@ -156,20 +155,18 @@ export const Header: React.FC<HeaderProps> = ({ onCartOpen, currentPage, onPageC
           <div className="md:hidden border-t border-gray-200 py-4">
             <nav className="flex flex-col space-y-2">
               {navigation.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onPageChange(item.id);
-                    setIsMenuOpen(false);
-                  }}
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
                   className={`text-left px-3 py-2 text-sm font-medium transition-colors hover:text-emerald-600 hover:bg-emerald-50 rounded-md ${
-                    currentPage === item.id
+                    isActivePath(item.path)
                       ? 'text-emerald-600 bg-emerald-50'
                       : 'text-gray-700'
                   }`}
                 >
                   {item.name}
-                </button>
+                </Link>
               ))}
             </nav>
           </div>

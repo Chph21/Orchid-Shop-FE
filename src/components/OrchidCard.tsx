@@ -1,35 +1,41 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { OrchidDTO } from '../types/types';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 
 interface OrchidCardProps {
   orchid: OrchidDTO;
-  onViewDetails: (orchid: OrchidDTO) => void;
+  onViewDetails?: (orchid: OrchidDTO) => void;
 }
 
-export const OrchidCard: React.FC<OrchidCardProps> = ({ orchid, onViewDetails }) => {
+export const OrchidCard: React.FC<OrchidCardProps> = ({ orchid }) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart(orchid, 1);
   };
 
+  const handleCardClick = () => {
+    navigate(`/orchid/${orchid.id}`);
+  };
+
   return (
     <div 
-      onClick={() => onViewDetails(orchid)}
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+      onClick={handleCardClick}
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
     >
       {/* Fixed height image container */}
-      <div className="w-full h-48 relative">
+      <div className="w-full h-48 relative overflow-hidden">
         <img
           src={orchid.url}
           alt={orchid.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2 right-2">
-          {orchid.isNatural && (
+          {orchid.isNatural === 'true' && (
             <span className="bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded">
               Natural
             </span>
