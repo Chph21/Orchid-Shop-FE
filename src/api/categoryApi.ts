@@ -1,23 +1,10 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import type { CategoryDTO } from '../types/types';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('orchid_access_token');
-    return token ? {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    } : {
-        'Content-Type': 'application/json'
-    };
-};
 
 export const categoryApi = {
     getAll: async (): Promise<CategoryDTO[]> => {
         try {
-            const response = await axios.get<CategoryDTO[]>(`${API_BASE_URL}/api/categories`);
+            const response = await apiClient.get<CategoryDTO[]>('/api/categories');
             return response.data.sort((a, b) => {
                 // Sort by ID if available, otherwise by name
                 if (a.id && b.id) {
@@ -32,7 +19,7 @@ export const categoryApi = {
 
     getById: async (id: string): Promise<CategoryDTO> => {
         try {
-            const response = await axios.get<CategoryDTO>(`${API_BASE_URL}/api/categories/${id}`);
+            const response = await apiClient.get<CategoryDTO>(`/api/categories/${id}`);
             return response.data;
         } catch (error) {
             throw error;
@@ -41,9 +28,7 @@ export const categoryApi = {
 
     create: async (categoryData: Omit<CategoryDTO, 'id'>): Promise<CategoryDTO> => {
         try {
-            const response = await axios.post<CategoryDTO>(`${API_BASE_URL}/api/categories`, categoryData, {
-                headers: getAuthHeaders()
-            });
+            const response = await apiClient.post<CategoryDTO>('/api/categories', categoryData);
             return response.data;
         } catch (error) {
             throw error;
@@ -52,9 +37,7 @@ export const categoryApi = {
 
     update: async (id: string, categoryData: Partial<CategoryDTO>): Promise<CategoryDTO> => {
         try {
-            const response = await axios.put<CategoryDTO>(`${API_BASE_URL}/api/categories/${id}`, categoryData, {
-                headers: getAuthHeaders()
-            });
+            const response = await apiClient.put<CategoryDTO>(`/api/categories/${id}`, categoryData);
             return response.data;
         } catch (error) {
             throw error;
@@ -63,9 +46,7 @@ export const categoryApi = {
 
     delete: async (id: string): Promise<void> => {
         try {
-            await axios.delete(`${API_BASE_URL}/api/categories/${id}`, {
-                headers: getAuthHeaders()
-            });
+            await apiClient.delete(`/api/categories/${id}`);
         } catch (error) {
             throw error;
         }

@@ -1,31 +1,17 @@
-import axios from 'axios';
+import apiClient from './apiClient';
 import type { 
     OrderReadResponse, 
     OrderSearchParams, 
     OrderWriteRequest,
-    OrderDetailReadResponse 
+    OrderDetailReadResponse,
+    PaginatedResponse
 } from '../types/types';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('orchid_access_token');
-    return token ? {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    } : {
-        'Content-Type': 'application/json'
-    };
-};
 
 export const orderApi = {
     // Get all orders
     getAll: async (): Promise<OrderReadResponse[]> => {
         try {
-            const response = await axios.get<OrderReadResponse[]>(`${API_BASE_URL}/api/orders`, {
-                headers: getAuthHeaders()
-            });
+            const response = await apiClient.get<OrderReadResponse[]>('/api/orders');
             return response.data;
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -34,11 +20,12 @@ export const orderApi = {
     },
 
     // Search orders with filters
-    search: async (params: OrderSearchParams = {}): Promise<OrderReadResponse[]> => {
+    search: async (params: OrderSearchParams = {}): Promise<PaginatedResponse<OrderReadResponse>> => {
         try {
             const searchParams = new URLSearchParams();
             
             if (params.id) searchParams.append('id', params.id);
+            if (params.accountId) searchParams.append('accountId', params.accountId);
             if (params.date) searchParams.append('date', params.date);
             if (params.totalAmount) searchParams.append('totalAmount', params.totalAmount.toString());
             if (params.status) searchParams.append('status', params.status);
@@ -48,14 +35,37 @@ export const orderApi = {
                 params.sort.forEach(sortParam => searchParams.append('sort', sortParam));
             }
 
-            const response = await axios.get<OrderReadResponse[]>(`${API_BASE_URL}/api/orders/search`, {
-                params: searchParams,
-                headers: getAuthHeaders()
+            const response = await apiClient.get<PaginatedResponse<OrderReadResponse>>('/api/orders/search', {
+                params: searchParams
             });
             return response.data;
         } catch (error) {
             console.error('Error searching orders:', error);
-            throw error;
+            // Fallback to getAll with client-side pagination
+            const allOrders = await orderApi.getAll();
+            const filteredOrders = allOrders.filter(order => {
+                if (params.id && !order.id.toLowerCase().includes(params.id.toLowerCase())) return false;
+                if (params.accountId && !order.accountId.toLowerCase().includes(params.accountId.toLowerCase())) return false;
+                if (params.status && !order.status.toLowerCase().includes(params.status.toLowerCase())) return false;
+                return true;
+            });
+            
+            const page = params.page || 0;
+            const size = params.size || 10;
+            const startIndex = page * size;
+            const endIndex = startIndex + size;
+            const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+            
+            return {
+                content: paginatedOrders,
+                totalElements: filteredOrders.length,
+                totalPages: Math.ceil(filteredOrders.length / size),
+                numberOfElements: paginatedOrders.length,
+                page,
+                size,
+                first: page === 0,
+                last: page >= Math.ceil(filteredOrders.length / size) - 1
+            };
         }
     },
 
@@ -63,7 +73,7 @@ export const orderApi = {
     getById: async (id: string): Promise<OrderReadResponse | null> => {
         try {
             const results = await orderApi.search({ id });
-            return results.length > 0 ? results[0] : null;
+            return results.content.length > 0 ? results.content[0] : null;
         } catch (error) {
             console.error('Error fetching order by ID:', error);
             throw error;
@@ -73,11 +83,8 @@ export const orderApi = {
     // Get order details by order ID
     getDetailsById: async (orderId: string): Promise<OrderDetailReadResponse[]> => {
         try {
-            const response = await axios.get<OrderDetailReadResponse[]>(
-                `${API_BASE_URL}/api/orders/${orderId}`,
-                {
-                    headers: getAuthHeaders()
-                }
+            const response = await apiClient.get<OrderDetailReadResponse[]>(
+                `/api/orders/details/${orderId}`
             );
             return response.data;
         } catch (error) {
@@ -86,15 +93,25 @@ export const orderApi = {
         }
     },
 
+    // Find order detail by ID - new function to get specific order detail
+    findOrderDetailById: async (orderDetailId: string): Promise<OrderDetailReadResponse | null> => {
+        try {
+            const response = await apiClient.get<OrderDetailReadResponse>(
+                `/api/order-details/${orderDetailId}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching order detail by ID:', error);
+            return null;
+        }
+    },
+
     // Create new order
     create: async (orderData: OrderWriteRequest): Promise<string> => {
         try {
-            const response = await axios.post<string>(
-                `${API_BASE_URL}/api/orders`,
-                orderData,
-                {
-                    headers: getAuthHeaders()
-                }
+            const response = await apiClient.post<string>(
+                '/api/orders',
+                orderData
             );
             return response.data;
         } catch (error) {
@@ -106,9 +123,7 @@ export const orderApi = {
     // Delete order
     delete: async (id: string): Promise<void> => {
         try {
-            await axios.delete(`${API_BASE_URL}/api/orders/${id}`, {
-                headers: getAuthHeaders()
-            });
+            await apiClient.delete(`/api/orders/${id}`);
         } catch (error) {
             console.error('Error deleting order:', error);
             throw error;
@@ -117,14 +132,17 @@ export const orderApi = {
 
     // Convenience methods for common searches
     searchByStatus: async (status: string): Promise<OrderReadResponse[]> => {
-        return orderApi.search({ status });
+        const result = await orderApi.search({ status });
+        return result.content;
     },
 
     searchByDate: async (date: string): Promise<OrderReadResponse[]> => {
-        return orderApi.search({ date });
+        const result = await orderApi.search({ date });
+        return result.content;
     },
 
     searchByAccountId: async (accountId: string): Promise<OrderReadResponse[]> => {
-        return orderApi.search({ id: accountId });
+        const result = await orderApi.search({ accountId });
+        return result.content;
     }
 };

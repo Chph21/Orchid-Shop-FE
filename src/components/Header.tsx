@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, Flower, User, LogOut, Settings } from 'lucide-react';
+import { ShoppingCart, Menu, X, Flower, User, LogOut, Settings, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -117,6 +117,17 @@ export const Header: React.FC<HeaderProps> = ({ onCartOpen, onLoginOpen }) => {
                       >
                         <Settings className="h-4 w-4" />
                         <span>Admin Dashboard</span>
+                      </Link>
+                    )}
+
+                    {user?.role !== 'admin' && (
+                      <Link
+                        to="/orders"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                      >
+                        <Package className="h-4 w-4" />
+                        <span>Order History</span>
                       </Link>
                     )}
                     

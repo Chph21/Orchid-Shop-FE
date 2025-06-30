@@ -52,7 +52,7 @@ export interface OrchidDTO {
     id: string;
     name: string;
     description: string;
-    isNatural: string;
+    isNatural: boolean;
     url: string;
     price: number;
     categoryName: string;
@@ -72,7 +72,7 @@ export interface CartItem {
 }
 
 // Page Types
-export type PageType = 'home' | 'shop' | 'about' | 'contact' | 'admin';
+export type PageType = 'home' | 'shop' | 'about' | 'contact' | 'orders' | 'admin';
 
 // Component Props Types
 export interface AppRoutesProps {
@@ -89,7 +89,7 @@ export interface OrchidReadResponse {
     id: string;
     name: string;
     description: string;
-    isNatural: string;
+    isNatural: boolean;
     url: string;
     price: number;
     categoryName: string;
@@ -108,7 +108,7 @@ export interface OrchidSearchParams {
     id?: string;
     name?: string;
     description?: string;
-    isNatural?: string;
+    isNatural?: boolean;
     minPrice?: number;
     maxPrice?: number;
     categoryName?: string;
@@ -134,6 +134,7 @@ export interface OrderWriteRequest {
 
 export interface OrderSearchParams {
     id?: string;
+    accountId?: string;
     date?: string;
     totalAmount?: number;
     status?: string;
@@ -163,4 +164,23 @@ export interface OrderDetailReadResponse {
     orchidName: string;
     price: number;
     quantity: number;
+}
+
+// Paginated response interface for better API pagination
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+}
+
+// Enhanced search params with better pagination support
+export interface EnhancedOrchidSearchParams extends OrchidSearchParams {
+  page?: number;
+  size?: number;
+  sort?: string[];
 }

@@ -1,91 +1,78 @@
-import axios from 'axios';
-import type { UserDTO } from '../types/types';
+import apiClient from './apiClient';
+import type { UserDTO, PaginatedResponse } from '../types/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('orchid_access_token');
-    return token ? {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    } : {
-        'Content-Type': 'application/json'
-    };
-};
+// User search parameters for pagination
+export interface UserSearchParams {
+    id?: string;
+    name?: string;
+    email?: string;
+    roleName?: string;
+    page?: number;
+    size?: number;
+    sort?: string[];
+}
 
 export const userApi = {
-    getAll: async (): Promise<UserDTO[]> => {
-        try {
-            const response = await axios.get<UserDTO[]>(`${API_BASE_URL}/api/accounts`, {
-                headers: getAuthHeaders()
-            });
-            return response.data.sort((a, b) => {
-                // Sort by ID if available, otherwise by name
-                if (a.id && b.id) {
-                    return parseInt(b.id) - parseInt(a.id);
-                }
-                return a.name.localeCompare(b.name);
-            });
-        } catch (error) {
-            throw error;
-        }
-    },
 
-    getById: async (id: string): Promise<UserDTO> => {
+    search: async (params: UserSearchParams = {}): Promise<PaginatedResponse<UserDTO>> => {
         try {
-            const response = await axios.get<UserDTO>(`${API_BASE_URL}/api/accounts/${id}`, {
-                headers: getAuthHeaders()
+            const searchParams = new URLSearchParams();
+            
+            if (params.id) searchParams.append('id', params.id);
+            if (params.name) searchParams.append('name', params.name);
+            if (params.email) searchParams.append('email', params.email);
+            if (params.roleName) searchParams.append('roleName', params.roleName);
+            if (params.page !== undefined) searchParams.append('page', params.page.toString());
+            if (params.size !== undefined) searchParams.append('size', params.size.toString());
+            if (params.sort && params.sort.length > 0) {
+                params.sort.forEach((sortParam: string) => searchParams.append('sort', sortParam));
+            }
+
+            const response = await apiClient.get<PaginatedResponse<UserDTO>>('/api/accounts/search', {
+                params: searchParams
             });
             return response.data;
         } catch (error) {
+            console.error('Error searching users:', error);
             throw error;
         }
     },
 
     findByEmail: async (email: string): Promise<UserDTO> => {
         try {
-            const response = await axios.get<UserDTO>(`${API_BASE_URL}/api/accounts/email`, {
-                params: {
-                    email: email
-                },
-                headers: getAuthHeaders()
+            // Validate email parameter
+            if (!email || !email.trim()) {
+                throw new Error('Email parameter is required');
+            }
+
+            const response = await apiClient.get<UserDTO>('/api/accounts/email', {
+                params: { email: email.trim() }
             });
-            return response.data;
-        } catch (error) {
-            throw error;
+
+            // Transform AccountResponse to UserDTO format
+            const accountResponse = response.data;
+            const userDTO: UserDTO = {
+                id: accountResponse.id,
+                name: accountResponse.name,
+                email: accountResponse.email,
+                password: accountResponse.password,
+                roleId: accountResponse.roleId,
+                roleName: accountResponse.roleName
+            };
+
+            return userDTO;
+        } catch (error: any) {
+            console.error('Error finding user by email:', error);
+            
+            // Handle specific error cases
+            if (error.response?.status === 404) {
+                throw new Error('User not found with the provided email');
+            } else if (error.response?.status === 400) {
+                throw new Error('Invalid email format');
+            } else {
+                throw new Error('Failed to find user by email');
+            }
         }
     },
 
-    create: async (userData: Omit<UserDTO, 'id'>): Promise<UserDTO> => {
-        try {
-            const response = await axios.post<UserDTO>(`${API_BASE_URL}/api/accounts`, userData, {
-                headers: getAuthHeaders()
-            });
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    update: async (id: string, userData: Partial<UserDTO>): Promise<UserDTO> => {
-        try {
-            const response = await axios.put<UserDTO>(`${API_BASE_URL}/api/accounts/${id}`, userData, {
-                headers: getAuthHeaders()
-            });
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    delete: async (id: string): Promise<void> => {
-        try {
-            await axios.delete(`${API_BASE_URL}/api/accounts/${id}`, {
-                headers: getAuthHeaders()
-            });
-        } catch (error) {
-            throw error;
-        }
-    }
 };

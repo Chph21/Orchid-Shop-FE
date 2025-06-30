@@ -9,13 +9,7 @@ interface OrderSummaryProps {
   total: number;
 }
 
-export const OrderSummary: React.FC<OrderSummaryProps> = ({
-  items,
-  subtotal,
-  shipping,
-  tax,
-  total
-}) => {
+export const OrderSummary: React.FC<OrderSummaryProps> = ({items}) => {
   return (
     <div className="bg-gray-50 rounded-lg p-6 sticky top-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>

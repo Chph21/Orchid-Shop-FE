@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { BarChart3, Users, Package, Filter, ShoppingBag } from 'lucide-react';
-import { OverviewManagement } from './OverviewManagement';
 import { OrchidManagement } from './OrchidManagement';
 import { CategoryManagement } from './CategoryManagement';
 import { UserManagement } from './UserManagement';
 import { OrderManagement } from './OrderManagement';
 
 export function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'users' | 'categories' | 'orders'>('overview');
+  const [activeTab, setActiveTab] = useState<'products' | 'users' | 'categories' | 'orders'>('products');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'overview':
-        return <OverviewManagement />;
       case 'products':
         return <OrchidManagement />;
       case 'categories':
@@ -22,7 +19,7 @@ export function AdminDashboard() {
       case 'orders':
         return <OrderManagement />;
       default:
-        return <OverviewManagement />;
+        return <OrchidManagement />;
     }
   };
 
@@ -39,7 +36,7 @@ export function AdminDashboard() {
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
             {[
-              { id: 'overview', label: 'Overview', icon: BarChart3 },
+              // { id: 'overview', label: 'Overview', icon: BarChart3 },
               { id: 'products', label: 'Orchids', icon: Package },
               { id: 'categories', label: 'Categories', icon: Filter },
               { id: 'orders', label: 'Orders', icon: ShoppingBag },

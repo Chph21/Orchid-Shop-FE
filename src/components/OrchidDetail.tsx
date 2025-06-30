@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { ArrowLeft, ShoppingCart, Heart, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus, ArrowLeft, Heart, Share2, Star, Truck, Shield, Headphones } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import type { OrchidDTO } from '../types/types';
+import { toast } from 'react-hot-toast';
 
 interface OrchidDetailProps {
   orchid: OrchidDTO;
@@ -14,301 +15,194 @@ export const OrchidDetail: React.FC<OrchidDetailProps> = ({ orchid }) => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(orchid.url);
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleAddToCart = () => {
     addToCart(orchid, quantity);
+    toast.success(`Added ${quantity} ${orchid.name} to cart!`);
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: orchid.name,
-          text: orchid.description,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Error sharing:', err);
-      }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-    }
+  const handleBack = () => {
+    navigate(-1);
   };
-
-  // Mock related orchids (in a real app, this would come from an API)
-  const relatedOrchids = [
-    { id: '1', name: 'Purple Phalaenopsis', price: 45.99, url: 'https://images.pexels.com/photos/1034584/pexels-photo-1034584.jpeg?auto=compress&cs=tinysrgb&w=300' },
-    { id: '2', name: 'White Dendrobium', price: 52.99, url: 'https://images.pexels.com/photos/1379927/pexels-photo-1379927.jpeg?auto=compress&cs=tinysrgb&w=300' },
-    { id: '3', name: 'Pink Cattleya', price: 68.99, url: 'https://images.pexels.com/photos/1034584/pexels-photo-1034584.jpeg?auto=compress&cs=tinysrgb&w=300' },
-  ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Breadcrumb Navigation */}
-      <div className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-2 text-sm">
-            <button
-              onClick={() => navigate('/')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Home
-            </button>
-            <span className="text-gray-400">/</span>
-            <button
-              onClick={() => navigate('/shop')}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Shop
-            </button>
-            <span className="text-gray-400">/</span>
-            <span className="text-gray-900 font-medium">{orchid.name}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-8 group"
+          onClick={handleBack}
+          className="flex items-center text-gray-600 hover:text-gray-900 mb-8 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+          <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Shop
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Section */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="aspect-square relative overflow-hidden rounded-2xl bg-gray-100">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Image Section */}
+            <div className="relative">
               <img
-                src={selectedImage}
+                src={orchid.url}
                 alt={orchid.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                className="w-full h-96 lg:h-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/600x600?text=Orchid';
+                  e.currentTarget.src = 'https://via.placeholder.com/600x400?text=No+Image';
                 }}
               />
-              
-              {/* Favorite Button */}
-              <button
-                onClick={() => setIsFavorite(!isFavorite)}
-                className="absolute top-4 right-4 p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <Heart className={`h-6 w-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
-              </button>
-
-              {/* Natural Badge */}
-              {orchid.isNatural === 'true' && (
-                <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Natural
+              {orchid.isNatural && (
+                <div className="absolute top-4 left-4">
+                  <span className="bg-emerald-100 text-emerald-800 text-sm font-medium px-3 py-1 rounded-full">
+                    Natural
+                  </span>
                 </div>
               )}
+              <button
+                onClick={() => setIsFavorite(!isFavorite)}
+                className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow"
+              >
+                <Heart className={`h-6 w-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
+              </button>
             </div>
 
-            {/* Thumbnail Images */}
-            <div className="grid grid-cols-4 gap-2">
-              {[orchid.url, orchid.url, orchid.url, orchid.url].map((url, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(url)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                    selectedImage === url ? 'border-emerald-500' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <img
-                    src={url}
-                    alt={`${orchid.name} view ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Product Info Section */}
-          <div className="space-y-8">
-            {/* Header */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-emerald-600 font-medium text-sm uppercase tracking-wide">
-                  {orchid.categoryName}
-                </span>
-                <button
-                  onClick={handleShare}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Share2 className="h-5 w-5" />
-                </button>
-              </div>
-              
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{orchid.name}</h1>
-              
-              {/* Rating */}
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="flex text-yellow-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-current" />
-                  ))}
+            {/* Details Section */}
+            <div className="p-8">
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{orchid.name}</h1>
+                <div className="flex items-center space-x-2 mb-4">
+                  <span className="text-emerald-600 text-2xl font-bold">
+                    ${orchid.price.toFixed(2)}
+                  </span>
+                  {orchid.categoryName && (
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                      {orchid.categoryName}
+                    </span>
+                  )}
                 </div>
-                <span className="text-gray-600 text-sm">(4.9) • 127 reviews</span>
               </div>
 
-              <div className="text-3xl font-bold text-emerald-600 mb-6">
-                ${orchid.price.toFixed(2)}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Description</h3>
-              <p className="text-gray-600 leading-relaxed">{orchid.description}</p>
-            </div>
-
-            {/* Product Details */}
-            <div className="grid grid-cols-2 gap-4 py-6 border-t border-b border-gray-200">
-              <div>
-                <span className="text-gray-500 text-sm">Type</span>
-                <p className="font-medium text-gray-900">
-                  {orchid.isNatural === 'true' ? 'Natural Species' : 'Hybrid Variety'}
+              {/* Description */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <Info className="h-5 w-5 mr-2" />
+                  Description
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {orchid.description}
                 </p>
               </div>
-              <div>
-                <span className="text-gray-500 text-sm">Category</span>
-                <p className="font-medium text-gray-900">{orchid.categoryName}</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">Care Level</span>
-                <p className="font-medium text-gray-900">Intermediate</p>
-              </div>
-              <div>
-                <span className="text-gray-500 text-sm">Bloom Season</span>
-                <p className="font-medium text-gray-900">Spring - Summer</p>
-              </div>
-            </div>
 
-            {/* Add to Cart Section */}
-            {user && (
-              <div className="space-y-6">
-                {/* Quantity Selector */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Quantity
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center border border-gray-300 rounded-lg">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="p-3 hover:bg-gray-100 transition-colors rounded-l-lg"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="px-6 py-3 text-center font-medium min-w-[60px]">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="p-3 hover:bg-gray-100 transition-colors rounded-r-lg"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
+              {/* Orchid Details */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Orchid Details</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-gray-900 mb-1">Type</h4>
+                    <p className="text-gray-600">
+                      {orchid.isNatural? 'Natural' : 'Hybrid'}
+                    </p>
+                  </div>
+                  {orchid.categoryName && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 mb-1">Category</h4>
+                      <p className="text-gray-600">{orchid.categoryName}</p>
                     </div>
-                    <span className="text-gray-500 text-sm">
-                      Total: ${(orchid.price * quantity).toFixed(2)}
-                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Care Tips */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Care Instructions</h3>
+                <div className="bg-emerald-50 p-4 rounded-lg">
+                  <ul className="space-y-2 text-sm text-emerald-800">
+                    <li>• Water weekly or when potting medium is nearly dry</li>
+                    <li>• Provide bright, indirect light</li>
+                    <li>• Maintain humidity levels between 40-70%</li>
+                    <li>• Keep in temperatures between 65-80°F (18-27°C)</li>
+                    <li>• Fertilize monthly during growing season</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Add to Cart Section */}
+              <div className="border-t border-gray-200 pt-8">
+                <div className="flex items-center space-x-4 mb-6">
+                  <div className="flex items-center space-x-2">
+                    <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
+                      Quantity:
+                    </label>
+                    <select
+                      id="quantity"
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseInt(e.target.value))}
+                      className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-emerald-500"
+                    >
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                {/* Add to Cart Button */}
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  <ShoppingCart className="h-6 w-6" />
-                  <span>Add to Cart</span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    <span>Add to Cart - ${(orchid.price * quantity).toFixed(2)}</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => navigate('/shop')}
+                    className="flex-1 sm:flex-none bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                  >
+                    Continue Shopping
+                  </button>
+                </div>
 
-                {/* Buy Now Button */}
-                <button className="w-full px-8 py-4 rounded-xl font-semibold text-lg border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 transition-colors">
-                  Buy Now
-                </button>
-              </div>
-            )}
-
-            {/* Features */}
-            <div className="grid grid-cols-1 gap-4 pt-6">
-              <div className="flex items-center space-x-3">
-                <Truck className="h-5 w-5 text-emerald-600" />
-                <span className="text-gray-700">Free shipping on orders over $100</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Shield className="h-5 w-5 text-emerald-600" />
-                <span className="text-gray-700">30-day healthy arrival guarantee</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Headphones className="h-5 w-5 text-emerald-600" />
-                <span className="text-gray-700">Expert care support included</span>
+                {!user && (
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Sign in for faster checkout and to track your orders
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Care Instructions */}
-        <div className="mt-16 bg-gray-50 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Care Instructions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">💧 Watering</h3>
-              <p className="text-gray-600">
-                Water weekly, allowing the potting medium to dry slightly between waterings. 
-                Use lukewarm water and avoid getting water on the leaves.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">☀️ Light</h3>
-              <p className="text-gray-600">
-                Bright, indirect light is ideal. East or west-facing windows work well. 
-                Avoid direct sunlight which can burn the leaves.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">🌡️ Temperature</h3>
-              <p className="text-gray-600">
-                Maintain temperatures between 65-80°F (18-27°C) during the day, 
-                with a slight drop at night to encourage blooming.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Related Products */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">You Might Also Like</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {relatedOrchids.map((related) => (
-              <div
-                key={related.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/orchid/${related.id}`)}
-              >
-                <div className="aspect-square">
-                  <img
-                    src={related.url}
-                    alt={related.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">{related.name}</h3>
-                  <p className="text-emerald-600 font-bold">${related.price}</p>
-                </div>
+        {/* Additional Information */}
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Choose Our Orchids?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-emerald-600 font-bold">✓</span>
               </div>
-            ))}
+              <h3 className="font-semibold text-gray-900 mb-2">Quality Guaranteed</h3>
+              <p className="text-gray-600 text-sm">
+                Each orchid is carefully selected and inspected before shipping
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-emerald-600 font-bold">📦</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Safe Shipping</h3>
+              <p className="text-gray-600 text-sm">
+                Specialized packaging ensures your orchid arrives in perfect condition
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-emerald-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-emerald-600 font-bold">💬</span>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Expert Support</h3>
+              <p className="text-gray-600 text-sm">
+                Get ongoing care advice from our orchid specialists
+              </p>
+            </div>
           </div>
         </div>
       </div>

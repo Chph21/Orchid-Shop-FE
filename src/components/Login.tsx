@@ -20,9 +20,6 @@ export const Login: React.FC<LoginProps> = ({ onClose, onSwitchToRegister }) => 
     e.preventDefault();
     setError('');
     
-    // Debug: Check if formData has values
-    console.log('Form data being submitted:', formData);
-    
     // Validate form data before submitting
     if (!formData.email.trim() || !formData.password.trim()) {
       setError('Please enter both email and password');

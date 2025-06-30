@@ -2,7 +2,6 @@ import React from 'react';
 import { X, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { OrderSummary } from './OrderSummary';
 import { orderApi } from '../../api/orderApi';
 import { toast } from 'react-hot-toast';
 
